@@ -6,31 +6,31 @@
     <title>SOFTWARE LICENSING & IP SECURITY CORE // Ilyukha211</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-dark: #030407;
-            --panel-bg: rgba(10, 13, 18, 0.96);
-            --card-bg: #080b11;
+            --bg-dark: #020202;
+            --panel-bg: rgba(8, 10, 15, 0.92);
+            --card-bg: #05070a;
             --border-dim: #1e293b;
             --border-bright: #00ff66;
-            --text-main: #f1f5f9;
-            --text-muted: #94a3b8;
-            --matrix-green: #00ff66;
-            --accent-cyan: #38bdf8;
-            --accent-amber: #fbbf24;
-            --accent-purple: #c084fc;
-            --accent-red: #f43f5e;
+            --text-main: #e2e8f0;
+            --text-muted: #64748b;
             
-            /* VS Code Dark Theme Colors */
-            --vs-bg: #1e1e1e;
-            --vs-keyword: #569cd6;
-            --vs-string: #ce9178;
-            --vs-comment: #6a9955;
-            --vs-function: #dcdcaa;
-            --vs-type: #4ec9b0;
-            --vs-number: #b5cea8;
-            --vs-preproc: #c586c0;
+            --matrix-green: #00ff66;
+            --matrix-green-glow: rgba(0, 255, 102, 0.4);
+            --accent-cyan: #0ea5e9;
+            --accent-amber: #f59e0b;
+            --accent-purple: #a855f7;
+            --accent-red: #ef4444;
+            
+            --vs-bg: #0d1117;
+            --vs-keyword: #ff7b72;
+            --vs-string: #a5d6ff;
+            --vs-comment: #8b949e;
+            --vs-function: #d2a8ff;
+            --vs-type: #79c0ff;
+            --vs-number: #79c0ff;
 
             --font-mono: 'Fira Code', monospace;
             --font-sans: 'Inter', sans-serif;
@@ -50,9 +50,22 @@
             line-height: 1.6;
             min-height: 100vh;
             overflow-x: hidden;
+            text-shadow: 0 0 2px rgba(226, 232, 240, 0.1);
         }
 
-        /* Background Matrix Animation Canvas */
+        .scanlines {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            background-size: 100% 2px, 3px 100%;
+            z-index: 9998;
+            pointer-events: none;
+            opacity: 0.6;
+        }
+
         #matrix-canvas {
             position: fixed;
             top: 0;
@@ -60,357 +73,366 @@
             width: 100vw;
             height: 100vh;
             z-index: 0;
-            opacity: 0.22;
+            opacity: 0.12;
             pointer-events: none;
+            transition: opacity 0.3s ease;
         }
 
         .container {
             position: relative;
             z-index: 1;
-            max-width: 1380px;
+            max-width: 1600px;
             margin: 20px auto;
             padding: 0 15px;
         }
 
-        /* IDE Console Frame */
         .ide-frame {
             background: var(--panel-bg);
             border: 1px solid var(--border-dim);
-            border-radius: 10px;
-            box-shadow: 0 30px 70px rgba(0, 0, 0, 0.95), 0 0 25px rgba(0, 255, 102, 0.05);
-            backdrop-filter: blur(20px);
+            border-radius: 12px;
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.9), 0 0 15px var(--matrix-green-glow);
+            backdrop-filter: blur(15px);
             overflow: hidden;
             display: flex;
             flex-direction: column;
         }
 
         .ide-header {
-            background: #05080e;
+            background: #010203;
             padding: 12px 20px;
             border-bottom: 1px solid var(--border-dim);
             display: flex;
             align-items: center;
             justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
         }
 
-        .window-dots {
-            display: flex;
-            gap: 8px;
-        }
-
-        .dot {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-        }
+        .window-dots { display: flex; gap: 8px; align-items: center; }
+        .dot { width: 14px; height: 14px; border-radius: 50%; box-shadow: inset 0 0 4px rgba(0,0,0,0.5); }
         .dot-red { background: #ff5f56; }
         .dot-yellow { background: #ffbd2e; }
         .dot-green { background: #27c93f; }
 
         .header-title {
             font-family: var(--font-mono);
-            font-size: 0.85rem;
+            font-size: clamp(0.8rem, 2vw, 0.95rem);
             color: var(--text-main);
             display: flex;
             align-items: center;
             gap: 10px;
-            letter-spacing: 0.8px;
+            letter-spacing: 1px;
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
+        }
+
+        .header-controls { display: flex; align-items: center; gap: 12px; }
+
+        .search-input {
+            background: #000;
+            border: 1px solid var(--border-dim);
+            color: var(--matrix-green);
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            padding: 6px 12px;
+            border-radius: 4px;
+            outline: none;
+            width: 180px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.8);
+        }
+
+        .search-input:focus {
+            border-color: var(--matrix-green);
+            box-shadow: inset 0 0 10px rgba(0, 255, 102, 0.1), 0 0 10px var(--matrix-green-glow);
+            width: 240px;
         }
 
         .author-badge {
             font-family: var(--font-mono);
             font-size: 0.8rem;
-            color: var(--matrix-green);
-            background: rgba(0, 255, 102, 0.08);
-            border: 1px solid var(--matrix-green);
+            color: #000;
+            background: var(--matrix-green);
             padding: 4px 12px;
             border-radius: 4px;
-            font-weight: 600;
+            font-weight: 700;
             letter-spacing: 0.5px;
-            box-shadow: 0 0 10px rgba(0, 255, 102, 0.15);
+            box-shadow: 0 0 15px var(--matrix-green-glow);
+            animation: pulse-glow 2s infinite alternate;
         }
 
-        /* Tabs Navigation */
+        @keyframes pulse-glow {
+            from { box-shadow: 0 0 5px var(--matrix-green-glow); }
+            to { box-shadow: 0 0 20px rgba(0, 255, 102, 0.8); }
+        }
+
         .tabs-bar {
             display: flex;
-            background: #020408;
+            background: #030406;
             border-bottom: 1px solid var(--border-dim);
             overflow-x: auto;
             scrollbar-width: thin;
-            scrollbar-color: var(--border-dim) transparent;
+            scrollbar-color: var(--matrix-green) #000;
         }
 
+        .tabs-bar::-webkit-scrollbar { height: 4px; }
+        .tabs-bar::-webkit-scrollbar-track { background: #000; }
+        .tabs-bar::-webkit-scrollbar-thumb { background: var(--matrix-green); border-radius: 4px; }
+
         .tab-btn {
-            padding: 12px 20px;
+            padding: 12px 18px;
             font-family: var(--font-mono);
-            font-size: 0.82rem;
+            font-size: 0.85rem;
             color: var(--text-muted);
             background: transparent;
             border: none;
             border-right: 1px solid var(--border-dim);
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all 0.3s ease;
             white-space: nowrap;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+            position: relative;
         }
 
-        .tab-btn:hover {
-            background: rgba(255, 255, 255, 0.03);
-            color: var(--text-main);
+        .tab-btn::before {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 0; width: 0; height: 2px;
+            background: var(--matrix-green);
+            transition: width 0.3s ease;
         }
+
+        .tab-btn:hover { color: var(--text-main); background: rgba(0, 255, 102, 0.05); }
+        .tab-btn:hover::before { width: 100%; }
 
         .tab-btn.active {
-            background: var(--panel-bg);
+            background: var(--card-bg);
             color: var(--matrix-green);
-            border-bottom: 2px solid var(--matrix-green);
             font-weight: 600;
-            text-shadow: 0 0 8px rgba(0, 255, 102, 0.3);
+            text-shadow: 0 0 8px var(--matrix-green-glow);
         }
+        .tab-btn.active::before { width: 100%; }
 
-        /* Main Viewport */
         .viewport {
-            padding: 35px;
-            min-height: 680px;
+            padding: clamp(16px, 3vw, 40px);
+            min-height: 700px;
+            position: relative;
         }
 
         .tab-content {
             display: none;
-            animation: fadeIn 0.25s ease-in-out;
+            animation: bootUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        .tab-content.active {
-            display: block;
+        .tab-content.active { display: block; }
+
+        @keyframes bootUp {
+            0% { opacity: 0; transform: scale(0.98) translateY(10px); filter: blur(4px); }
+            100% { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); }
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(6px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Typography */
         h1 {
             font-family: var(--font-mono);
-            font-size: 1.7rem;
-            color: #ffffff;
-            margin-bottom: 20px;
+            font-size: clamp(1.4rem, 3.5vw, 1.8rem);
+            color: #fff;
+            margin-bottom: 24px;
             font-weight: 700;
             border-bottom: 1px solid var(--border-dim);
             padding-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+            text-shadow: 0 0 10px rgba(255,255,255,0.2);
         }
 
         h2 {
             font-family: var(--font-mono);
-            font-size: 1.2rem;
+            font-size: clamp(1.1rem, 2.5vw, 1.3rem);
             color: var(--accent-cyan);
-            margin: 28px 0 16px 0;
+            margin: 32px 0 16px 0;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
         }
 
         h2::before {
-            content: ">>";
-            color: var(--matrix-green);
+            content: "[SYS_REQ]";
+            color: var(--text-muted);
+            font-size: 0.8em;
+            background: rgba(255,255,255,0.05);
+            padding: 2px 6px;
+            border-radius: 4px;
         }
 
         p {
-            color: #cbd5e1;
-            font-size: 0.98rem;
+            color: #94a3b8;
+            font-size: 1rem;
             margin-bottom: 16px;
-            line-height: 1.75;
+            line-height: 1.8;
         }
 
-        /* Layout Grids */
+        strong { color: #fff; font-weight: 600; text-shadow: 0 0 5px rgba(255,255,255,0.3); }
+
         .card-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
             gap: 20px;
-            margin: 20px 0;
+            margin: 24px 0;
         }
 
         .info-card {
             background: var(--card-bg);
             border: 1px solid var(--border-dim);
             border-radius: 8px;
-            padding: 22px;
-            transition: all 0.25s ease;
+            padding: 24px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
         }
+
+        .info-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.03), transparent);
+            transform: translateX(-100%);
+            transition: 0.5s;
+            z-index: -1;
+        }
+
+        .info-card:hover::before { transform: translateX(100%); }
 
         .info-card:hover {
             border-color: var(--matrix-green);
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8), inset 0 0 20px rgba(0, 255, 102, 0.05);
+        }
+
+        .info-card::after {
+            content: attr(data-hex);
+            position: absolute;
+            bottom: 10px;
+            right: 15px;
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            color: var(--border-dim);
+            opacity: 0.5;
         }
 
         .badge {
             display: inline-block;
             font-family: var(--font-mono);
-            font-size: 0.72rem;
-            padding: 3px 8px;
+            font-size: 0.75rem;
+            padding: 4px 10px;
             border-radius: 4px;
             text-transform: uppercase;
-            font-weight: 600;
+            font-weight: 700;
             margin-bottom: 12px;
             border: 1px solid;
+            letter-spacing: 0.5px;
         }
 
-        .badge-green { background: rgba(0, 255, 102, 0.1); color: var(--matrix-green); border-color: var(--matrix-green); }
-        .badge-cyan { background: rgba(56, 189, 248, 0.1); color: var(--accent-cyan); border-color: var(--accent-cyan); }
-        .badge-amber { background: rgba(251, 191, 36, 0.1); color: var(--accent-amber); border-color: var(--accent-amber); }
-        .badge-purple { background: rgba(192, 132, 252, 0.1); color: var(--accent-purple); border-color: var(--accent-purple); }
-        .badge-red { background: rgba(244, 63, 94, 0.1); color: var(--accent-red); border-color: var(--accent-red); }
+        .badge-green { background: rgba(0, 255, 102, 0.1); color: var(--matrix-green); border-color: var(--matrix-green); box-shadow: 0 0 10px rgba(0, 255, 102, 0.2); }
+        .badge-cyan { background: rgba(14, 165, 233, 0.1); color: var(--accent-cyan); border-color: var(--accent-cyan); box-shadow: 0 0 10px rgba(14, 165, 233, 0.2); }
+        .badge-amber { background: rgba(245, 158, 11, 0.1); color: var(--accent-amber); border-color: var(--accent-amber); box-shadow: 0 0 10px rgba(245, 158, 11, 0.2); }
+        .badge-purple { background: rgba(168, 85, 247, 0.1); color: var(--accent-purple); border-color: var(--accent-purple); box-shadow: 0 0 10px rgba(168, 85, 247, 0.2); }
+        .badge-red { background: rgba(239, 68, 68, 0.1); color: var(--accent-red); border-color: var(--accent-red); box-shadow: 0 0 10px rgba(239, 68, 68, 0.2); }
 
         .card-heading {
-            font-size: 1.05rem;
-            color: #ffffff;
+            font-size: 1.1rem;
+            color: #fff;
             margin-bottom: 10px;
             font-weight: 600;
+            font-family: var(--font-mono);
         }
 
-        /* Tables */
         .table-wrapper {
             overflow-x: auto;
-            margin: 20px 0;
+            margin: 24px 0;
             border: 1px solid var(--border-dim);
             border-radius: 8px;
+            background: #000;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
             font-size: 0.9rem;
-            background: var(--card-bg);
             text-align: left;
+            min-width: 800px;
         }
 
-        th, td {
-            padding: 14px 18px;
-            border-bottom: 1px solid var(--border-dim);
-        }
+        th, td { padding: 14px 20px; border-bottom: 1px solid var(--border-dim); }
 
         th {
-            background: #04070d;
+            background: #05070a;
             color: var(--accent-cyan);
             font-family: var(--font-mono);
-            font-size: 0.82rem;
+            font-size: 0.85rem;
             text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
-        tr:hover { background: rgba(255, 255, 255, 0.02); }
+        tr:nth-child(even) { background: rgba(255,255,255,0.01); }
+        tr:hover { background: rgba(0, 255, 102, 0.05); }
+        td { color: #cbd5e1; }
 
-        /* FIXED: Code Editor & Syntax Highlighting Engine */
         .editor-container {
             background: var(--vs-bg);
             border: 1px solid var(--border-dim);
             border-radius: 8px;
-            margin: 22px 0;
+            margin: 24px 0;
             overflow: hidden;
-            box-shadow: 0 12px 30px rgba(0,0,0,0.6);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.8);
+            position: relative;
+        }
+
+        .editor-container::before {
+            content: 'TERMINAL_INSTANCE';
+            position: absolute;
+            top: 50%; left: 50%; transform: translate(-50%, -50%);
+            font-size: 4rem; font-family: var(--font-mono);
+            color: rgba(255,255,255,0.01); z-index: 0; pointer-events: none;
         }
 
         .editor-header {
-            background: #252526;
-            padding: 10px 18px;
+            background: #010409;
+            padding: 10px 20px;
             font-family: var(--font-mono);
             font-size: 0.8rem;
-            color: #cccccc;
+            color: #8b949e;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 1px solid #333333;
+            border-bottom: 1px solid #21262d;
+            position: relative;
+            z-index: 1;
         }
 
-        /* Fix code squishing with pre tag */
         .editor-pre {
             margin: 0;
             padding: 20px;
-            background: var(--vs-bg);
+            background: transparent;
             overflow-x: auto;
             white-space: pre;
-            word-spacing: normal;
-            word-break: normal;
             tab-size: 4;
             font-family: var(--font-mono);
-            font-size: 0.88rem;
+            font-size: 0.9rem;
             line-height: 1.6;
-            color: #d4d4d4;
+            color: #c9d1d9;
+            position: relative;
+            z-index: 1;
         }
 
-        /* Syntax Color Tokens */
-        .kw { color: var(--vs-keyword); font-weight: 600; }
+        .kw { color: var(--vs-keyword); }
         .st { color: var(--vs-string); }
         .cm { color: var(--vs-comment); font-style: italic; }
         .fn { color: var(--vs-function); }
         .tp { color: var(--vs-type); }
         .nm { color: var(--vs-number); }
-        .pr { color: var(--vs-preproc); }
 
-        .btn-copy {
-            background: #333333;
-            color: #cccccc;
-            border: 1px solid #454545;
-            padding: 5px 12px;
-            border-radius: 4px;
-            font-size: 0.75rem;
-            cursor: pointer;
-            font-family: var(--font-mono);
-            transition: all 0.2s ease;
-        }
-
-        .btn-copy:hover {
-            background: var(--matrix-green);
-            color: #000000;
-            border-color: var(--matrix-green);
-            font-weight: 600;
-        }
-
-        /* Terminal CLI UI */
-        .cli-box {
-            background: #000000;
-            border: 1px solid var(--matrix-green);
-            border-radius: 8px;
-            padding: 20px;
-            font-family: var(--font-mono);
-            margin-top: 18px;
-            box-shadow: inset 0 0 20px rgba(0, 255, 102, 0.08);
-        }
-
-        .cli-output {
-            height: 340px;
-            overflow-y: auto;
-            color: var(--matrix-green);
-            font-size: 0.88rem;
-            line-height: 1.65;
-            padding-right: 10px;
-        }
-
-        .cli-input-line {
-            display: flex;
-            gap: 10px;
-            margin-top: 15px;
-            padding-top: 12px;
-            border-top: 1px solid rgba(0, 255, 102, 0.25);
-            align-items: center;
-        }
-
-        .cli-prompt {
-            color: var(--accent-cyan);
-            font-weight: 700;
-        }
-
-        .cli-input-line input {
-            background: transparent;
-            border: none;
-            color: #ffffff;
-            font-family: var(--font-mono);
-            font-size: 0.92rem;
-            width: 100%;
-            outline: none;
-        }
-
-        /* Interactive Buttons */
         .btn-ui {
             background: #0f172a;
             color: var(--text-main);
@@ -418,32 +440,167 @@
             padding: 10px 18px;
             border-radius: 6px;
             font-family: var(--font-mono);
-            font-size: 0.82rem;
+            font-size: 0.85rem;
             cursor: pointer;
             transition: all 0.2s ease;
-            margin: 4px 6px 4px 0;
+            margin: 6px 6px 6px 0;
             display: inline-flex;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .btn-ui:hover {
-            background: var(--matrix-green);
-            color: #000000;
+            background: rgba(0, 255, 102, 0.1);
+            color: var(--matrix-green);
             border-color: var(--matrix-green);
-            font-weight: 600;
-            box-shadow: 0 0 12px rgba(0, 255, 102, 0.3);
+            box-shadow: 0 0 15px rgba(0, 255, 102, 0.3);
         }
 
         .btn-ui-accent {
-            background: rgba(0, 255, 102, 0.12);
+            background: rgba(0, 255, 102, 0.15);
             border-color: var(--matrix-green);
             color: var(--matrix-green);
+            font-weight: 700;
+        }
+        .btn-ui-accent:hover {
+            background: var(--matrix-green);
+            color: #000;
+            box-shadow: 0 0 20px var(--matrix-green-glow);
         }
 
-        /* Status Bar Footer */
+        /* --- WIZARD / CONSOLE UI TAB 07 --- */
+        .wiz-container {
+            background: #000;
+            border: 1px solid var(--border-dim);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.9), inset 0 0 30px rgba(0, 255, 102, 0.05);
+            margin-top: 20px;
+        }
+        .wiz-header {
+            background: #111;
+            padding: 8px 15px;
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: #666;
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px solid #222;
+        }
+        .wiz-body {
+            padding: 25px;
+            min-height: 350px;
+            font-family: var(--font-mono);
+            font-size: 0.95rem;
+            position: relative;
+        }
+        .wiz-line {
+            color: var(--matrix-green);
+            margin-bottom: 12px;
+            display: block;
+            text-shadow: 0 0 5px rgba(0, 255, 102, 0.3);
+        }
+        .wiz-human-line {
+            color: #fff;
+            margin-bottom: 20px;
+        }
+        .wiz-human-line::before {
+            content: "user@cyber-core:~$ ";
+            color: var(--accent-cyan);
+            text-shadow: none;
+        }
+        .wiz-cursor {
+            display: inline-block;
+            width: 10px;
+            height: 18px;
+            background: var(--matrix-green);
+            vertical-align: middle;
+            animation: wiz-blink 1s step-end infinite;
+        }
+        @keyframes wiz-blink { 50% { opacity: 0; } }
+        
+        .wiz-options { display: none; margin-top: 20px; }
+        .wiz-opt-btn {
+            background: transparent;
+            border: 1px dashed var(--border-dim);
+            color: var(--accent-amber);
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+            text-align: left;
+            padding: 12px 15px;
+            width: 100%;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-radius: 4px;
+        }
+        .wiz-opt-btn::before { content: "[EXEC] "; color: var(--text-muted); }
+        .wiz-opt-btn:hover {
+            border-color: var(--matrix-green);
+            color: var(--matrix-green);
+            background: rgba(0, 255, 102, 0.05);
+            padding-left: 20px;
+        }
+
+        .wiz-result-box {
+            display: none;
+            margin-top: 30px;
+            padding: 20px;
+            border: 1px solid var(--matrix-green);
+            background: rgba(0, 255, 102, 0.05);
+            border-radius: 4px;
+            animation: bootUp 0.3s;
+        }
+
+        /* --- CLI TAB 09 --- */
+        .cli-box {
+            background: #000;
+            border: 1px solid var(--border-dim);
+            border-radius: 8px;
+            padding: 20px;
+            font-family: var(--font-mono);
+            margin-top: 20px;
+            box-shadow: inset 0 0 30px rgba(14, 165, 233, 0.05);
+            position: relative;
+        }
+        .cli-box::after {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(rgba(0,255,0,0.02) 1px, transparent 1px);
+            background-size: 100% 4px; pointer-events: none;
+        }
+        .cli-output {
+            height: 400px;
+            overflow-y: auto;
+            color: var(--text-main);
+            font-size: 0.9rem;
+            line-height: 1.7;
+            padding-right: 10px;
+            scrollbar-width: thin;
+            scrollbar-color: var(--border-dim) #000;
+        }
+        .cli-input-line {
+            display: flex;
+            gap: 12px;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid var(--border-dim);
+            align-items: center;
+        }
+        .cli-prompt { color: var(--accent-red); font-weight: 700; white-space: nowrap; }
+        .cli-input-line input {
+            background: transparent;
+            border: none;
+            color: #fff;
+            font-family: var(--font-mono);
+            font-size: 0.95rem;
+            width: 100%;
+            outline: none;
+        }
+
         .ide-statusbar {
-            background: #020408;
+            background: #010203;
             border-top: 1px solid var(--border-dim);
             padding: 8px 20px;
             font-family: var(--font-mono);
@@ -452,69 +609,82 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
         }
 
-        .status-item {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
+        .status-item { display: flex; align-items: center; gap: 12px; }
         .status-online {
-            display: inline-block;
-            width: 8px;
-            height: 8px;
-            background: var(--matrix-green);
-            border-radius: 50%;
-            box-shadow: 0 0 8px var(--matrix-green);
+            display: inline-block; width: 10px; height: 10px;
+            background: var(--matrix-green); border-radius: 50%;
+            box-shadow: 0 0 10px var(--matrix-green);
+            animation: status-pulse 2s infinite;
         }
+        @keyframes status-pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
 
-        /* External Links */
         .ext-link {
-            color: var(--matrix-green);
+            color: var(--accent-cyan);
             text-decoration: none;
-            border-bottom: 1px dashed var(--matrix-green);
+            border-bottom: 1px dashed var(--accent-cyan);
             transition: all 0.2s;
         }
-
         .ext-link:hover {
-            color: #ffffff;
-            border-bottom-style: solid;
+            color: var(--matrix-green);
+            border-bottom-color: var(--matrix-green);
             background: rgba(0, 255, 102, 0.1);
         }
 
-        ul, ol {
-            margin-left: 22px;
-            margin-bottom: 18px;
-        }
-
+        ul, ol { margin-left: 25px; margin-bottom: 16px; color: #cbd5e1; }
         li { margin-bottom: 8px; }
 
         code {
-            background: rgba(255, 255, 255, 0.08);
-            padding: 2px 6px;
+            background: #000;
+            padding: 2px 8px;
             border-radius: 4px;
-            color: var(--accent-cyan);
+            border: 1px solid var(--border-dim);
+            color: var(--matrix-green);
             font-family: var(--font-mono);
-            font-size: 0.88rem;
+            font-size: 0.9em;
         }
 
+        #toast-notification {
+            position: fixed;
+            bottom: 25px; right: 25px;
+            background: #000;
+            color: var(--matrix-green);
+            border: 1px solid var(--matrix-green);
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+            padding: 15px 25px;
+            border-radius: 4px;
+            box-shadow: 0 10px 30px rgba(0, 255, 102, 0.2);
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            pointer-events: none;
+            z-index: 9999;
+        }
+        #toast-notification.show { opacity: 1; transform: translateX(0); }
+
         @media (max-width: 768px) {
-            .container { padding: 5px; }
-            .viewport { padding: 18px; }
-            h1 { font-size: 1.3rem; }
+            .container { padding: 5px; margin: 5px auto; }
+            .viewport { padding: 15px; }
             .card-grid { grid-template-columns: 1fr; }
+            .search-input { width: 130px; }
+            .search-input:focus { width: 100%; }
+            .header-controls { width: 100%; justify-content: space-between; }
         }
     </style>
 </head>
 <body>
 
+    <div class="scanlines"></div>
     <canvas id="matrix-canvas"></canvas>
+    <div id="toast-notification">MSG_BUFFER_EMPTY</div>
 
     <div class="container">
         <div class="ide-frame">
             
-            <!-- Header Bar -->
             <div class="ide-header">
                 <div class="window-dots">
                     <div class="dot dot-red"></div>
@@ -522,140 +692,142 @@
                     <div class="dot dot-green"></div>
                 </div>
                 <div class="header-title">
-                    <span>CYBER_CORE // SOFTWARE_LICENSING_CORE_v5.2</span>
+                    <span>CYBER_CORE // IP_LICENSING_SYSTEM_v7.0</span>
                 </div>
-                <div class="author-badge">Made by Ilyukha211</div>
+                <div class="header-controls">
+                    <input type="text" id="tabSearch" class="search-input" placeholder="Search (Ctrl+K)..." autocomplete="off">
+                    <button class="btn-ui" style="padding: 4px 10px; font-size: 0.75rem;" onclick="toggleEffects()">FX_TOGGLE</button>
+                    <div class="author-badge">SysAdmin: Ilyukha211</div>
+                </div>
             </div>
 
-            <!-- Tabs Navigation -->
             <div class="tabs-bar" id="tabsHeader">
-                <button class="tab-btn active" onclick="switchTab('tab1')">01_Теорія_та_Огляд.md</button>
-                <button class="tab-btn" onclick="switchTab('tab2')">02_Open_vs_Closed.json</button>
-                <button class="tab-btn" onclick="switchTab('tab3')">03_Матриця_Ліцензій.spec</button>
-                <button class="tab-btn" onclick="switchTab('tab4')">04_Синтаксис_Коду.cpp</button>
-                <button class="tab-btn" onclick="switchTab('tab5')">05_Безпека_DevSecOps.log</button>
-                <button class="tab-btn" onclick="switchTab('tab6')">06_Генератор_LICENSE.exe</button>
-                <button class="tab-btn" onclick="switchTab('tab7')">07_Консоль_CLI.sh</button>
-                <button class="tab-btn" onclick="switchTab('tab8')">08_Джерела_та_База.ref</button>
+                <button class="tab-btn active" data-tab="tab1">01_Основи_та_Закон.md</button>
+                <button class="tab-btn" data-tab="tab2">02_Open_vs_Closed.json</button>
+                <button class="tab-btn" data-tab="tab3">03_Матриця_Ліцензій.spec</button>
+                <button class="tab-btn" data-tab="tab4">04_Creative_Commons.media</button>
+                <button class="tab-btn" data-tab="tab5">05_Синтаксис_Коду.cpp</button>
+                <button class="tab-btn" data-tab="tab6">06_Кібер_Ризики_та_DevSecOps.log</button>
+                <button class="tab-btn" data-tab="tab7">07_Термінал_Вибору.sh</button>
+                <button class="tab-btn" data-tab="tab8">08_Генератор_LICENSE.exe</button>
+                <button class="tab-btn" data-tab="tab9">09_Консоль_CLI.sys</button>
+                <button class="tab-btn" data-tab="tab10">10_База_Даних.db</button>
             </div>
 
-            <!-- Viewport Content -->
             <div class="viewport">
                 
-                <!-- TAB 1 -->
                 <div id="tab1" class="tab-content active">
-                    <h1>Тема 3: Ліцензії для створених інформаційних продуктів</h1>
-                    <p><strong>Інформаційний продукт</strong> — це задокументована інформація або програмне забезпечення (ПЗ), створене в результаті інтелектуальної діяльності людини, яке має споживчу вартість та призначене для задоволення потреб користувачів у цифровому просторі.</p>
-                    <p>За замовчуванням будь-який вихідний код перебуває під повним захистом <strong>Авторського права (Copyright)</strong>. Без явно наданої ліцензії жодна інша особа не має юридичного права копіювати, запускати, модифікувати або розповсюджувати цей продукт.</p>
+                    <h1>
+                        <span>Тема 3: Ліцензії для створених інформаційних продуктів</span>
+                        <span class="badge badge-green">SYS_INIT_01</span>
+                    </h1>
+                    <p><strong>Інформаційний продукт</strong> — це задокументована інформація, медіа-контент або програмне забезпечення (ПЗ), створене в результаті інтелектуальної діяльності людини, яке має споживчу вартість та призначене для задоволення потреб користувачів у цифровому просторі.</p>
+                    <p>За замовчуванням будь-який вихідний код, цифровий арт чи текст перебуває під повним захистом <strong>Авторського права (Copyright)</strong>. Без явно наданої ліцензії жодна інша особа не має юридичного права копіювати, запускати, модифікувати або розповсюджувати цей продукт (у режимі <code>All Rights Reserved</code>).</p>
+
+                    <h2>Як застосувати ліцензію до свого продукту?</h2>
+                    <ol>
+                        <li>Створити звичайний текстовий файл із назвою <code>LICENSE</code> або <code>LICENSE.txt</code> у кореневому каталозі проекту.</li>
+                        <li>Вставити туди повний офіційний текст обраної ліцензії.</li>
+                        <li>Додати короткий заголовок (SPDX ідентифікатор) на початок кожного файлу з вихідним кодом.</li>
+                    </ol>
 
                     <h2>Три стовпи інтелектуальної власності в IT</h2>
                     <div class="card-grid">
-                        <div class="info-card">
+                        <div class="info-card" data-hex="0x1A 0x8F">
                             <span class="badge badge-green">Правова основа</span>
                             <div class="card-heading">1. Авторське право (Copyright)</div>
-                            <p>Виникає автоматично з моменту створення образу або тексту програми. Захищає синтаксичну форму вираження коду від прямого копіювання.</p>
+                            <p>Виникає автоматично з моменту створення твору. Захищає формальне вираження коду від прямого копіювання, але не саму ідею чи алгоритм. Позначається символом <strong>©</strong>.</p>
                         </div>
-                        <div class="info-card">
+                        <div class="info-card" data-hex="0x2B 0x9A">
                             <span class="badge badge-cyan">Договірний механізм</span>
                             <div class="card-heading">2. Програмна Ліцензія</div>
-                            <p>Юридичний договір між автором і користувачем. Визначає чіткі умови використання, редагування, комерціалізації та передачі коду.</p>
+                            <p>Юридичний договір (контракт) між автором і користувачем. Визначає чіткі дозволи й обмеження щодо використання, модифікації, комерціалізації та розповсюдження.</p>
                         </div>
-                        <div class="info-card">
+                        <div class="info-card" data-hex="0x3C 0x7B">
                             <span class="badge badge-amber">Свобода коду</span>
                             <div class="card-heading">3. Концепція Copyleft</div>
-                            <p>Правовий реверсивний механізм: копірайт використовується для того, щоб юридично зафіксувати відкритість усіх майбутніх модифікацій програми.</p>
+                            <p>Правовий хак (реверсивний механізм): Авторське право використовується для гарантії того, що всі майбутні модифікації продукту залишаться вільними (відкритими) для спільноти.</p>
                         </div>
                     </div>
                 </div>
 
-                <!-- TAB 2 -->
                 <div id="tab2" class="tab-content">
-                    <h1>Інформаційні продукти з вільним і закритим кодом</h1>
+                    <h1>
+                        <span>Архітектура розповсюдження: Open vs Closed</span>
+                        <span class="badge badge-cyan">CORE_MODULE_02</span>
+                    </h1>
                     <p>Фундаментальний поділ усіх програмних продуктів у сучасній IT-індустрії базується на доступності вихідних файлів (Source Code) для перевірки, аудиту та модифікації.</p>
 
                     <div class="card-grid">
-                        <div class="info-card">
+                        <div class="info-card" data-hex="0xAA 0xFF">
                             <span class="badge badge-green">FOSS / Open Source</span>
                             <div class="card-heading">Відкрите ПЗ (Open Source)</div>
-                            <p>Вихідний код знаходиться у відкритому доступі. Будь-хто може шукати вразливості, виправляти баги та додавати новий функціонал.</p>
+                            <p>Вихідний код знаходиться у відкритому доступі. Будь-хто може шукати вразливості, виправляти баги та додавати новий функціонал. Захищено відкритими ліцензіями.</p>
                             <ul>
-                                <li><strong>Приклади:</strong> Linux Kernel, Python, PostgreSQL, Blender, VS Code.</li>
+                                <li><strong>Приклади:</strong> Linux Kernel, Python, Blender, VS Code.</li>
                             </ul>
                         </div>
-                        <div class="info-card">
+                        <div class="info-card" data-hex="0x00 0x00">
                             <span class="badge badge-red">Proprietary / Closed</span>
                             <div class="card-heading">Закрите ПЗ (Proprietary)</div>
-                            <p>Вихідний код є комерційною таємницею компанії-розробника. Користувач купує лише право на запуск скомпільованого бінарного файла (EULA).</p>
+                            <p>Вихідний код є комерційною таємницею. Користувач купує лише право на запуск скомпільованого бінарного файла. Декомпіляція заборонена EULA.</p>
                             <ul>
-                                <li><strong>Приклади:</strong> Microsoft Windows, macOS, Adobe Photoshop, MS Office.</li>
+                                <li><strong>Приклади:</strong> Microsoft Windows, macOS, Adobe Photoshop.</li>
                             </ul>
                         </div>
                     </div>
 
-                    <h2>Порівняльний детальний аналіз моделей</h2>
+                    <h2>Порівняльний аудит моделей</h2>
                     <div class="table-wrapper">
                         <table>
                             <thead>
                                 <tr>
                                     <th>Критерій оцінки</th>
-                                    <th>Вільне ПЗ (Open Source)</th>
+                                    <th>Вільне ПЗ (FOSS)</th>
                                     <th>Закрите ПЗ (Proprietary)</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr>
                                     <td>Доступ до сирцевого коду</td>
-                                    <td>100% відкритий репозиторій (GitHub / GitLab)</td>
-                                    <td>Прихований, заблокований за стандартами торговельної таємниці</td>
+                                    <td>100% відкритий репозиторій</td>
+                                    <td>Прихований, заблокований (Торгова таємниця)</td>
                                 </tr>
                                 <tr>
                                     <td>Перевірка безпеки</td>
                                     <td>Публічний аудит спільноти (Закон Лінуса)</td>
-                                    <td>Закритий внутрішній аудит розробника (Security through obscurity)</td>
+                                    <td>Security through obscurity (Безпека через невідомість)</td>
                                 </tr>
                                 <tr>
                                     <td>Модифікація та форки</td>
                                     <td>Дозволено без обмежень (згідно з ліцензією)</td>
-                                    <td>Суворо заборонено умовами користувацької угоди (EULA)</td>
-                                </tr>
-                                <tr>
-                                    <td>Модель монетизації</td>
-                                    <td>Підтримка, SaaS, Enterprise-збірки, консалтинг</td>
-                                    <td>Продаж ліцензійних ключів, плата за передплату/користувача</td>
+                                    <td>Заборонено користувацькою угодою (EULA)</td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
 
-                    <h2>Глибока розшифровка ключових термінів монетизації та розгортання</h2>
+                    <h2>Додаткові концепції розповсюдження</h2>
                     <div class="card-grid">
-                        <div class="info-card">
+                        <div class="info-card" data-hex="0xDD 0x11">
                             <span class="badge badge-purple">SaaS Model</span>
                             <div class="card-heading">SaaS (Software as a Service)</div>
-                            <p><strong>ПЗ як послуга:</strong> Хмарна модель, за якої користувач працює з програмою через веб-браузер або API. Сама програма виконується на серверах розробника, і користувачеві не передається локальний бінарний файл.</p>
+                            <p>Хмарна модель (ПЗ як послуга). Користувач не завантажує код, а працює з ним через браузер або API (напр. Google Docs).</p>
                         </div>
-                        <div class="info-card">
-                            <span class="badge badge-cyan">Enterprise Tier</span>
-                            <div class="card-heading">Enterprise-збірки</div>
-                            <p>Розширені комерційні версії open-source продуктів, адаптовані під вимоги великого бізнесу: з підтримкою ролей (RBAC), інтеграцією SSO/LDAP, гарантованим SLA та цілодобовою технічною підтримкою (24/7).</p>
-                        </div>
-                        <div class="info-card">
-                            <span class="badge badge-amber">EULA Contract</span>
-                            <div class="card-heading">EULA (End User License Agreement)</div>
-                            <p><strong>Ліцензійна угода з кінцевим користувачем:</strong> Юридичний договір у закритому ПЗ, що забороняє реверс-інжиніринг, декомпіляцію та передачу програми третім особам.</p>
-                        </div>
-                        <div class="info-card">
-                            <span class="badge badge-green">Dual Licensing</span>
-                            <div class="card-heading">Подвійне ліцензування (Dual-Licensing)</div>
-                            <p>Стратегія, коли розробник видає код під суворою ліцензією (GPL) безкоштовно для FOSS-спільноти, але одночасно продає платну комерційну ліцензію компаніям, які бажають закрити свій код.</p>
+                        <div class="info-card" data-hex="0xEE 0x22">
+                            <span class="badge badge-amber">Freeware / Shareware</span>
+                            <div class="card-heading">Проміжне ПЗ</div>
+                            <p><strong>Freeware:</strong> Безкоштовне для завантаження, але код закритий (Discord, Telegram клієнт). <strong>Shareware:</strong> Тріальна версія з обмеженням за часом (WinRAR).</p>
                         </div>
                     </div>
                 </div>
 
-                <!-- TAB 3 -->
                 <div id="tab3" class="tab-content">
-                    <h1>Повна матриця та детальний аналіз ліцензій</h1>
-                    <p>Відкриті ліцензії поділяються залежно від суворості вимог до збереження відкритості коду у похідних продуктах.</p>
+                    <h1>
+                        <span>Матриця Ліцензій ПЗ (Лістинг)</span>
+                        <span class="badge badge-purple">LICENSE_DB_03</span>
+                    </h1>
+                    <p>Відкриті ліцензії класифікуються за рівнем "вірусності" та вимогами до похідних проектів.</p>
 
                     <div class="table-wrapper">
                         <table>
@@ -663,97 +835,118 @@
                                 <tr>
                                     <th>Тип ліцензії</th>
                                     <th>Назва ліцензії</th>
-                                    <th>Закриття похідного коду</th>
-                                    <th>Патентна гарантія</th>
-                                    <th>Ключова вимога</th>
+                                    <th>Закриття коду у похідних</th>
+                                    <th>Ключова вимога (Умова)</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr>
                                     <td><span class="badge badge-green">Permissive</span></td>
-                                    <td><code>MIT</code> / <code>BSD 3-Clause</code></td>
+                                    <td><code>MIT</code> / <code>BSD</code></td>
                                     <td>Дозволено</td>
-                                    <td>Ні</td>
-                                    <td>Збереження тексту авторського копірайту</td>
+                                    <td>Збереження тексту копірайту автора. Максимальна свобода.</td>
                                 </tr>
                                 <tr>
                                     <td><span class="badge badge-cyan">Permissive + Patents</span></td>
                                     <td><code>Apache 2.0</code></td>
                                     <td>Дозволено</td>
-                                    <td>Так</td>
-                                    <td>Надання патентних прав + фіксація внесених змін</td>
+                                    <td>Захист від патентних позовів (Patent Grant).</td>
                                 </tr>
                                 <tr>
                                     <td><span class="badge badge-amber">Weak Copyleft</span></td>
                                     <td><code>GNU LGPLv3</code></td>
-                                    <td>Дозволено (динамічне зв'язування)</td>
-                                    <td>Так</td>
-                                    <td>Модифікації самої бібліотеки мають залишатися відкритими</td>
+                                    <td>Дозволено (динамічно)</td>
+                                    <td>Зміни самої бібліотеки мають бути відкриті.</td>
                                 </tr>
                                 <tr>
                                     <td><span class="badge badge-red">Strong Copyleft</span></td>
                                     <td><code>GNU GPLv3</code></td>
-                                    <td>Заборонено</td>
-                                    <td>Так</td>
-                                    <td>Увесь похідний продукт зобов'язаний поширюватися під GPLv3</td>
+                                    <td>Суворо Заборонено</td>
+                                    <td>Увесь похідний продукт зобов'язаний поширюватися під GPLv3.</td>
                                 </tr>
                                 <tr>
                                     <td><span class="badge badge-purple">Network Copyleft</span></td>
                                     <td><code>GNU AGPLv3</code></td>
-                                    <td>Заборонено</td>
-                                    <td>Так</td>
-                                    <td>Вимагає відкривати код навіть для хмарних сервісів (SaaS)</td>
+                                    <td>Суворо Заборонено</td>
+                                    <td>Вимагає відкривати код навіть для мережевих SaaS-сервісів.</td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
 
-                    <h2>Детальна розшифровка специфіки ліцензій</h2>
+                    <h2>Детальний аналіз специфіки</h2>
                     <div class="card-grid">
-                        <div class="info-card">
-                            <span class="badge badge-purple">Критично важливо!</span>
-                            <div class="card-heading">GNU AGPLv3 (Affero General Public License)</div>
-                            <p><strong>Мережевий Copyleft (SaaS Loophole Fix):</strong> У класичному GPLv3 обов'язок відкривати вихідний код виникав лише при розповсюдженні бінарного файла (дистрибуції). Компанії обходили це, запускаючи GPL-код у хмарі як SaaS і не віддаючи код спільноті. <strong>AGPLv3 ліквідує цю лазівку:</strong> якщо програма виконується на сервері й надає послуги через мережу Internet, розробник зобов'язаний надати повний вихідний код усім мережевим користувачам.</p>
-                        </div>
-                        <div class="info-card">
-                            <span class="badge badge-red">Strong Copyleft</span>
+                        <div class="info-card" data-hex="0x99 0x99">
+                            <span class="badge badge-red">Вірусний ефект</span>
                             <div class="card-heading">GNU GPLv3 (General Public License)</div>
-                            <p>Забезпечує «вірусний» ефект. Якщо ви використовуєте бодай один модуль під GPLv3 у своєму проекті й поширюєте скомпільований файл, увесь свій проект ви зобов'язані відкрити під ліцензією GPLv3.</p>
+                            <p>Якщо ви використовуєте хоча б 1 рядок коду під GPLv3 у своєму проекті й поширюєте цей проект, ви зобов'язані відкрити увесь свій власний код під тією ж ліцензією GPLv3. Це захищає екосистему від корпоративного привласнення.</p>
                         </div>
-                        <div class="info-card">
-                            <span class="badge badge-amber">Weak Copyleft</span>
-                            <div class="card-heading">GNU LGPLv3 (Lesser GPL)</div>
-                            <p>Створена для системних бібліотек. Дозволяє зв'язувати (link) закриті комерційні програми з LGPL-бібліотекою без обов'язку відкривати вихідний код основної програми.</p>
-                        </div>
-                        <div class="info-card">
+                        <div class="info-card" data-hex="0x44 0x44">
                             <span class="badge badge-cyan">Corporate Standard</span>
                             <div class="card-heading">Apache License 2.0</div>
-                            <p>Пермісивна ліцензія, яка явно надає патентні права від розробників до користувачів та захищає від патентних позовів у корпоративному середовищі.</p>
+                            <p>Улюблена ліцензія великих корпорацій (Google, Meta). Дозволяє робити код закритим, але додатково надає "патентну недоторканність" між розробниками та користувачами.</p>
                         </div>
                     </div>
                 </div>
 
-                <!-- TAB 4 (FIXED SYNTAX DISPLAY) -->
                 <div id="tab4" class="tab-content">
-                    <h1>Заголовки коду та синтаксис (VS Code Highlighting)</h1>
-                    <p>Для автоматичної ідентифікації ліцензій у пайплайнах розробки застосовують стандартизовані ідентифікатори <strong>SPDX (Software Package Data Exchange)</strong>.</p>
+                    <h1>
+                        <span>Creative Commons (Медіа та Арт)</span>
+                        <span class="badge badge-amber">MEDIA_CORE_04</span>
+                    </h1>
+                    <p>Не всі інформаційні продукти є програмним кодом. Для цифрового арту, текстів, музики, 3D-моделей та графіки використовується стандартизована родина ліцензій <strong>Creative Commons (CC)</strong>.</p>
 
-                    <!-- C++ Section -->
+                    <div class="card-grid">
+                        <div class="info-card" data-hex="0xC1 0x01">
+                            <span class="badge badge-green">CC BY (Attribution)</span>
+                            <div class="card-heading">Із зазначенням авторства</div>
+                            <p>Дозволяє розповсюджувати, редагувати, адаптувати та використовувати твір у комерційних цілях, головна умова — вказати автора першоджерела.</p>
+                        </div>
+                        <div class="info-card" data-hex="0xC1 0x02">
+                            <span class="badge badge-cyan">CC BY-SA (ShareAlike)</span>
+                            <div class="card-heading">Поширення на тих самих умовах</div>
+                            <p>Аналог Copyleft для контенту (використовується Вікіпедією). Будь-які похідні або змінені матеріали мають поширюватись під цією ж ліцензією.</p>
+                        </div>
+                        <div class="info-card" data-hex="0xC1 0x03">
+                            <span class="badge badge-amber">CC BY-NC (NonCommercial)</span>
+                            <div class="card-heading">Некомерційне використання</div>
+                            <p>Забороняє використовувати контент для отримання фінансового прибутку. Дозволено лише для особистих, освітніх чи благодійних цілей.</p>
+                        </div>
+                        <div class="info-card" data-hex="0xC1 0x04">
+                            <span class="badge badge-red">CC BY-ND (NoDerivatives)</span>
+                            <div class="card-heading">Без похідних творів</div>
+                            <p>Дозволяє поширювати твір (навіть комерційно), але суворо забороняє його змінювати, обрізати чи накладати фільтри.</p>
+                        </div>
+                        <div class="info-card" data-hex="0xC0 0x00">
+                            <span class="badge badge-purple">CC0 (Public Domain)</span>
+                            <div class="card-heading">Суспільне надбання</div>
+                            <p>Автор повністю і назавжди відмовляється від усіх авторських прав. Продукт стає надбанням людства. Жодних обмежень.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="tab5" class="tab-content">
+                    <h1>
+                        <span>Синтаксис та Імплементація (SPDX)</span>
+                        <span class="badge badge-green">CODE_INJECT_05</span>
+                    </h1>
+                    <p>Для автоматичної ідентифікації ліцензій сканерами безпеки (наприклад, GitHub Dependabot) використовують стандарт <strong>SPDX (Software Package Data Exchange)</strong>.</p>
+
                     <h2>1. C++ Implementation (MIT License)</h2>
                     <div class="editor-container">
                         <div class="editor-header">
-                            <span>main.cpp — C++20 Standard</span>
-                            <button class="btn-copy" onclick="copySnippet('codeCpp')">Copy C++ Code</button>
+                            <span>main.cpp — C++20 Core</span>
+                            <button class="btn-ui" style="margin:0; padding: 4px 10px; font-size: 0.7rem;" data-copy="codeCpp">COPY_SYS</button>
                         </div>
 <pre class="editor-pre"><code id="codeCpp"><span class="cm">// SPDX-License-Identifier: MIT</span>
 <span class="cm">// Copyright (c) 2026 Ilyukha211</span>
 
-<span class="pr">#include</span> <span class="st">&lt;iostream&gt;</span>
-<span class="pr">#include</span> <span class="st">&lt;string&gt;</span>
+<span class="kw">#include</span> <span class="st">&lt;iostream&gt;</span>
+<span class="kw">#include</span> <span class="st">&lt;string&gt;</span>
 
 <span class="kw">class</span> <span class="tp">SecurityEngine</span> {
 <span class="kw">public</span>:
-    <span class="kw">void</span> <span class="fn">verifyLicense</span>(<span class="kw">bool</span> isValid) {
+    <span class="tp">void</span> <span class="fn">verifyLicense</span>(<span class="tp">bool</span> isValid) {
         <span class="kw">if</span> (isValid) {
             std::<span class="tp">cout</span> &lt;&lt; <span class="st">"[OK] License Verified under MIT Standard."</span> &lt;&lt; std::<span class="tp">endl</span>;
         } <span class="kw">else</span> {
@@ -762,19 +955,18 @@
     }
 };
 
-<span class="kw">int</span> <span class="fn">main</span>() {
+<span class="tp">int</span> <span class="fn">main</span>() {
     <span class="tp">SecurityEngine</span> engine;
     engine.<span class="fn">verifyLicense</span>(<span class="kw">true</span>);
     <span class="kw">return</span> <span class="nm">0</span>;
 }</code></pre>
                     </div>
 
-                    <!-- Python Section -->
                     <h2>2. Python Implementation (GNU GPLv3)</h2>
                     <div class="editor-container">
                         <div class="editor-header">
                             <span>core_engine.py — Python 3.12</span>
-                            <button class="btn-copy" onclick="copySnippet('codePy')">Copy Python Code</button>
+                            <button class="btn-ui" style="margin:0; padding: 4px 10px; font-size: 0.7rem;" data-copy="codePy">COPY_SYS</button>
                         </div>
 <pre class="editor-pre"><code id="codePy"><span class="cm"># SPDX-License-Identifier: GPL-3.0-or-later</span>
 <span class="cm"># Copyright (C) 2026 Ilyukha211</span>
@@ -782,185 +974,220 @@
 <span class="kw">import</span> sys
 
 <span class="kw">def</span> <span class="fn">check_gpl_compliance</span>(is_open_source: <span class="tp">bool</span>) -&gt; <span class="tp">bool</span>:
-    <span class="cm"># Strong copyleft validation rule</span>
-    <span class="kw">if</span> <span class="kw">not</span> is_open_source:
+    <span class="kw">if not</span> is_open_source:
         <span class="fn">print</span>(<span class="st">"[ALERT] Commercial embedding without source disclosure violates GPLv3!"</span>)
-        <span class="kw">return</span> <span class="kw">False</span>
+        <span class="kw">return False</span>
     
     <span class="fn">print</span>(<span class="st">"[SUCCESS] System compliant with GNU GPLv3 terms."</span>)
-    <span class="kw">return</span> <span class="kw">True</span>
+    <span class="kw">return True</span>
 
 <span class="kw">if</span> __name__ == <span class="st">"__main__"</span>:
     <span class="fn">check_gpl_compliance</span>(is_open_source=<span class="kw">True</span>)</code></pre>
                     </div>
-
-                    <!-- Rust Section -->
-                    <h2>3. Rust Implementation (Apache 2.0)</h2>
-                    <div class="editor-container">
-                        <div class="editor-header">
-                            <span>main.rs — Rust Edition 2021</span>
-                            <button class="btn-copy" onclick="copySnippet('codeRust')">Copy Rust Code</button>
-                        </div>
-<pre class="editor-pre"><code id="codeRust"><span class="cm">// SPDX-License-Identifier: Apache-2.0</span>
-<span class="cm">// Copyright (c) 2026 Ilyukha211</span>
-
-<span class="kw">fn</span> <span class="fn">main</span>() {
-    <span class="kw">let</span> license_name = <span class="st">"Apache-2.0"</span>;
-    <span class="kw">let</span> patent_grant = <span class="kw">true</span>;
-
-    <span class="kw">if</span> patent_grant {
-        <span class="fn">println!</span>(<span class="st">"Module [{}] loaded with full patent protection."</span>, license_name);
-    } <span class="kw">else</span> {
-        <span class="fn">println!</span>(<span class="st">"Warning: Unprotected module detected."</span>);
-    }
-}</code></pre>
-                    </div>
-
-                    <!-- JavaScript Section -->
-                    <h2>4. JavaScript / Node.js Implementation (AGPLv3)</h2>
-                    <div class="editor-container">
-                        <div class="editor-header">
-                            <span>server.js — Node.js ES6</span>
-                            <button class="btn-copy" onclick="copySnippet('codeJs')">Copy JS Code</button>
-                        </div>
-<pre class="editor-pre"><code id="codeJs"><span class="cm">// SPDX-License-Identifier: AGPL-3.0-only</span>
-<span class="cm">// Copyright (c) 2026 Ilyukha211</span>
-
-<span class="kw">const</span> express = <span class="fn">require</span>(<span class="st">'express'</span>);
-<span class="kw">const</span> app = <span class="fn">express</span>();
-
-<span class="kw">function</span> <span class="fn">validateNetworkLicense</span>(req, res) {
-    <span class="kw">const</span> sourcePublic = <span class="kw">true</span>;
-    <span class="kw">if</span> (sourcePublic) {
-        res.<span class="fn">send</span>(<span class="st">"AGPL-3.0 Network Compliance: Source code is accessible via web link."</span>);
-    } <span class="kw">else</span> {
-        res.<span class="fn">status</span>(<span class="nm">500</span>).<span class="fn">send</span>(<span class="st">"Violation: AGPL source code must be provided to users."</span>);
-    }
-}
-
-app.<span class="fn">get</span>(<span class="st">'/status'</span>, validateNetworkLicense);</code></pre>
-                    </div>
                 </div>
 
-                <!-- TAB 5 -->
-                <div id="tab5" class="tab-content">
-                    <h1>Юридичні ризики, DevSecOps та SBOM</h1>
-                    <p>Нехтування ліцензійними правилами в комерційній розробці може призвести до багатомільйонних судових позовів та закриття проектів.</p>
+                <div id="tab6" class="tab-content">
+                    <h1>
+                        <span>Кібер-ризики та DevSecOps (Юридичні вразливості)</span>
+                        <span class="badge badge-red">RISK_ANALYTICS_06</span>
+                    </h1>
+                    <p>Нехтування ліцензійними правилами в комерційній розробці може призвести до багатомільйонних судових позовів (IP Infringement) та примусового закриття проектів.</p>
 
                     <div class="card-grid">
-                        <div class="info-card">
-                            <span class="badge badge-red">Критичний юридичний ризик</span>
+                        <div class="info-card" data-hex="0xFA 0x12">
+                            <span class="badge badge-red">Критичний ризик</span>
                             <div class="card-heading">GPL Contamination (Вірусне зараження)</div>
-                            <p>Якщо у закритий комерційний проект випадково потрапляє бібліотека під ліцензією GPLv3, за рішенням суду компанія може бути зобов'язана опублікувати весь свій приватний код у відкритий доступ.</p>
+                            <p>Якщо розробник випадково копіює шматок коду під ліцензією GPLv3 у свій закритий (комерційний) проект, суд може визнати це порушенням і змусити компанію опублікувати весь свій приватний вихідний код у відкритий доступ.</p>
                         </div>
-                        <div class="info-card">
-                            <span class="badge badge-amber">Кібербезпека</span>
-                            <div class="card-heading">Supply Chain Attacks (Ланцюги постачання)</div>
-                            <p>Зловмисники купують або зламують популярні open-source пакети (npm, PyPI) і додають туди шкідливий код. Необхідно проводити постійний аудит залежностей.</p>
+                        <div class="info-card" data-hex="0x0B 0x77">
+                            <span class="badge badge-cyan">Правовий Хак</span>
+                            <div class="card-heading">Clean Room Design (Чиста кімната)</div>
+                            <p>Метод зворотної розробки, коли одна команда аналізує чужий код і пише специфікацію, а інша команда (яка ніколи не бачила оригінал) пише новий код за цією специфікацією. Унеможливлює звинувачення у крадіжці копірайту.</p>
                         </div>
-                        <div class="info-card">
-                            <span class="badge badge-green">Сучасний стандарт DevSecOps</span>
-                            <div class="card-heading">SBOM (Software Bill of Materials)</div>
-                            <p>Повний паспорт програмного забезпечення. Включає перелік усіх використаних бібліотек, версій та ліцензій для швидкого реагування на знайдені вразливості (CVE).</p>
+                        <div class="info-card" data-hex="0x5C 0x88">
+                            <span class="badge badge-amber">Зловживання правами</span>
+                            <div class="card-heading">Copyfraud (Копіфрауд) & Patent Trolls</div>
+                            <p>Copyfraud — це висування хибних заяв про наявність авторських прав на матеріали, які вже знаходяться у суспільному надбанні (Public Domain). Патентні тролі — компанії, що скуповують патенти виключно для шантажу та судів з розробниками.</p>
                         </div>
                     </div>
 
-                    <h2>Реальні судові прецеденти в IT:</h2>
-                    <ul>
-                        <li><strong>Artifex v. Hancom (2017):</strong> Суд визнав, що ліцензія GNU GPL є повноцінним юридичним договором. Компанія Hancom була змушена сплатити штраф за використання коду Ghostscript без дотримання умов GPL.</li>
-                        <li><strong>Cisco GPL Lawsuit:</strong> Позов від Free Software Foundation змусив компанію Cisco відкрити вихідний код прошивок для роутерів Linksys.</li>
-                    </ul>
-                </div>
-
-                <!-- TAB 6 -->
-                <div id="tab6" class="tab-content">
-                    <h1>Генератор файлу LICENSE</h1>
-                    <p>Заповніть параметри нижче для автоматичного створення стандартного файлу ліцензії:</p>
-
-                    <div style="background: var(--card-bg); border: 1px solid var(--border-dim); padding: 22px; border-radius: 8px;">
-                        <label style="font-family: var(--font-mono); font-size: 0.85rem; color: var(--accent-cyan);">Оберіть тип ліцензії:</label>
-                        <select id="genType" style="background: #020407; color: #fff; border: 1px solid var(--border-dim); padding: 9px 12px; border-radius: 5px; font-family: var(--font-mono); width: 100%; margin: 8px 0 16px 0;">
-                            <option value="mit">MIT License (Пермісивна, максимальна свобода)</option>
-                            <option value="gpl3">GNU General Public License v3 (Строгий Copyleft)</option>
-                            <option value="agpl3">GNU Affero GPL v3 (Мережевий Copyleft / SaaS)</option>
-                            <option value="apache2">Apache License 2.0 (Патентний захист)</option>
-                        </select>
-
-                        <label style="font-family: var(--font-mono); font-size: 0.85rem; color: var(--accent-cyan);">Ім'я автора / Організація:</label>
-                        <input type="text" id="genAuthor" value="Ilyukha211" style="background: #020407; color: #fff; border: 1px solid var(--border-dim); padding: 9px 12px; border-radius: 5px; font-family: var(--font-mono); width: 100%; margin: 8px 0 16px 0;">
-
-                        <button class="btn-ui btn-ui-accent" onclick="generateLicenseText()">Згенерувати текст LICENSE</button>
-
-                        <div class="editor-container" style="margin-top: 18px;">
-                            <div class="editor-header">
-                                <span>LICENSE.txt Output</span>
-                                <button class="btn-copy" onclick="copySnippet('genOutput')">Копіювати LICENSE</button>
-                            </div>
-                            <pre class="editor-pre"><code id="genOutput">Натисніть кнопку вище для генерації файлу...</code></pre>
-                        </div>
+                    <h2>Захист інфраструктури (DevSecOps)</h2>
+                    <div class="info-card" style="margin-top: 15px;" data-hex="0xBB 0xAA">
+                        <span class="badge badge-green">Стандарт Безпеки</span>
+                        <div class="card-heading">Створення SBOM (Software Bill of Materials)</div>
+                        <p>Щоб уникнути юридичних проблем та швидко реагувати на знайдені вразливості (CVE), сучасні CI/CD пайплайни автоматично генерують SBOM — повний криптографічний "паспорт" програми. Він містить перелік усіх сторонніх бібліотек, їх версій та прив'язаних до них ліцензій.</p>
                     </div>
                 </div>
 
-                <!-- TAB 7 -->
                 <div id="tab7" class="tab-content">
-                    <h1>Інтерактивна Консоль Управління (CLI)</h1>
-                    <p>Управління системою за допомогою командного рядка. Використовуйте кнопки або вводьте команди вручну:</p>
+                    <h1>
+                        <span>Термінал вибору ліцензії (Wizard)</span>
+                        <span class="badge badge-cyan">EXEC_WIZARD_07</span>
+                    </h1>
+                    <p>Інтерактивна система алгоритмічного підбору ліцензії. Пройдіть опитування у консолі.</p>
 
-                    <div>
-                        <button class="btn-ui" onclick="runCommand('help')">help</button>
-                        <button class="btn-ui" onclick="runCommand('scan')">scan dependencies</button>
-                        <button class="btn-ui" onclick="runCommand('info mit')">info mit</button>
-                        <button class="btn-ui" onclick="runCommand('info agpl')">info agpl</button>
-                        <button class="btn-ui btn-ui-accent" onclick="runCommand('download')">💾 download (Завантажити звіт)</button>
-                        <button class="btn-ui" onclick="runCommand('clear')">clear</button>
+                    <div class="wiz-container">
+                        <div class="wiz-header">
+                            <span>tty1: license-wizard.sh</span>
+                            <span>[Ilyukha211 @ CyberCore]</span>
+                        </div>
+                        <div class="wiz-body" id="wizBody">
+                            <div id="wizLog"></div>
+                            <div id="wizInputArea" style="display:none;">
+                                <div class="wiz-human-line" id="wizQuestionText"></div>
+                                <div class="wiz-options" id="wizOptionsContainer"></div>
+                            </div>
+                            <span class="wiz-cursor" id="wizCursor"></span>
+                        </div>
+                        
+                        <div id="wizResultBox" class="wiz-result-box">
+                            <div style="color: var(--matrix-green); font-weight: bold; margin-bottom: 10px; font-size: 1.1rem;">[+] ОПТИМАЛЬНА ЛІЦЕНЗІЯ ЗНАЙДЕНА: <span id="wizResTitle"></span></div>
+                            <div style="color: #cbd5e1; margin-bottom: 15px;" id="wizResDesc"></div>
+                            <button class="btn-ui btn-ui-accent" id="wizResetBtn">REBOOT_WIZARD</button>
+                        </div>
+                    </div>
+                    
+                    <div id="wizDataStore" style="display:none;">
+                        <span id="dtQ1">Запуск протоколу аналізу... Який тип інтелектуальної власності ви хочете захистити?</span>
+                        <span id="dtA1_1">Вихідний код / Програмне забезпечення</span>
+                        <span id="dtA1_2">Медіа (Арт, Текст, Музика, 3D)</span>
+                        
+                        <span id="dtQ2">Який рівень свободи для сторонніх розробників ви плануєте надати?</span>
+                        <span id="dtA2_1">Максимальна свобода (нехай роблять що завгодно, аби зберігали моє ім'я)</span>
+                        <span id="dtA2_2">Захист від закриття (усі модифікації мусять залишатися відкритими)</span>
+                        <span id="dtA2_3">Корпоративний захист (пермісивна + патентна недоторканність)</span>
+                        
+                        <span id="dtR_Media_T">Creative Commons (CC BY 4.0 / CC BY-SA 4.0)</span>
+                        <span id="dtR_Media_D">Для медіаконтенту, графіки та тексту рекомендовано використовувати ліцензії родини Creative Commons. Вони ідеально захищають авторство та гнучко регулюють комерційне використання.</span>
+                        
+                        <span id="dtR_Free_T">MIT License або BSD</span>
+                        <span id="dtR_Free_D">Це "пермісивна" ліцензія. Вона має дуже короткий текст і дозволяє користувачам інтегрувати ваш код навіть у закриті комерційні проекти. Єдина вимога — залишити рядок з вашим копірайтом.</span>
+                        
+                        <span id="dtR_Copyleft_T">GNU GPLv3 (або AGPLv3 для серверів)</span>
+                        <span id="dtR_Copyleft_D">Це "вірусна" ліцензія зі строгим Copyleft. Вона юридично гарантує, що ніхто не зможе вкрасти ваш код, закрити його та продавати як свій без відкриття сирців. Усі форки залишаться FOSS.</span>
+                        
+                        <span id="dtR_Pat_T">Apache License 2.0</span>
+                        <span id="dtR_Pat_D">Чудовий вибір для серйозних комерційних та корпоративних проектів. Вона дозволяє закривати похідний код, але містить юридичний щит, який захищає контриб'юторів від патентних позовів.</span>
+                    </div>
+                </div>
+
+                <div id="tab8" class="tab-content">
+                    <h1>
+                        <span>Генератор файлу LICENSE</span>
+                        <span class="badge badge-green">COMPILE_08</span>
+                    </h1>
+                    <p>Введіть системні параметри для автоматичної генерації стандартизованого юридичного тексту:</p>
+
+                    <div style="background: var(--card-bg); border: 1px solid var(--border-dim); padding: 25px; border-radius: 8px; box-shadow: inset 0 0 20px rgba(0,0,0,0.5);">
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; font-family: var(--font-mono); font-size: 0.85rem; color: var(--accent-cyan); margin-bottom: 8px;">> SELECT_LICENSE_TYPE:</label>
+                            <select id="genType" style="background: #000; color: var(--matrix-green); border: 1px solid var(--border-dim); padding: 10px 15px; border-radius: 4px; font-family: var(--font-mono); width: 100%; outline: none;">
+                                <option value="mit">MIT License (Пермісивна, максимальна свобода)</option>
+                                <option value="gpl3">GNU General Public License v3 (Строгий Copyleft)</option>
+                                <option value="agpl3">GNU Affero GPL v3 (Мережевий Copyleft / SaaS)</option>
+                                <option value="apache2">Apache License 2.0 (Патентний захист)</option>
+                                <option value="ccby">Creative Commons Attribution 4.0 (CC BY 4.0)</option>
+                                <option value="cc0">Creative Commons Zero 1.0 (Public Domain)</option>
+                            </select>
+                        </div>
+
+                        <div style="margin-bottom: 20px;">
+                            <label style="display: block; font-family: var(--font-mono); font-size: 0.85rem; color: var(--accent-cyan); margin-bottom: 8px;">> INPUT_AUTHOR_IDENTITY:</label>
+                            <input type="text" id="genAuthor" value="Ilyukha211" style="background: #000; color: var(--text-main); border: 1px solid var(--border-dim); padding: 10px 15px; border-radius: 4px; font-family: var(--font-mono); width: 100%; outline: none;">
+                        </div>
+
+                        <button class="btn-ui btn-ui-accent" id="btnGenLicense">[EXECUTE_GENERATION]</button>
+
+                        <div class="editor-container" style="margin-top: 25px;">
+                            <div class="editor-header">
+                                <span>output/LICENSE.txt</span>
+                                <button class="btn-ui" style="margin:0; padding: 4px 10px; font-size: 0.7rem;" data-copy="genOutput">COPY_FILE</button>
+                            </div>
+                            <pre class="editor-pre"><code id="genOutput" style="color: #a5d6ff;">Натисніть EXECUTE_GENERATION для компіляції...</code></pre>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="tab9" class="tab-content">
+                    <h1>
+                        <span>Термінал Адміністратора (CLI)</span>
+                        <span class="badge badge-amber">ROOT_ACCESS_09</span>
+                    </h1>
+                    <p>Інтерфейс прямого доступу до бази даних ліцензій. Введіть команду для отримання дампу інформації:</p>
+
+                    <div style="display: flex; flex-wrap: wrap; gap: 5px;">
+                        <button class="btn-ui" data-cmd="help">help</button>
+                        <button class="btn-ui" data-cmd="scan">scan target</button>
+                        <button class="btn-ui" data-cmd="man mit">man mit</button>
+                        <button class="btn-ui" data-cmd="man gpl">man gpl</button>
+                        <button class="btn-ui" data-cmd="man cc">man cc</button>
+                        <button class="btn-ui btn-ui-accent" data-cmd="export">export_report</button>
+                        <button class="btn-ui" data-cmd="clear">clear</button>
                     </div>
 
                     <div class="cli-box">
                         <div class="cli-output" id="terminalScreen">
-                            <div>CYBER_CORE Kernel CLI Terminal v5.2</div>
-                            <div>System Architect: Ilyukha211</div>
-                            <div>Введіть 'help' для списку команд або 'download' для збереження конспекту...</div>
+                            <div style="color: var(--accent-cyan);">CyberCore OS kernel v7.4.2-generic</div>
+                            <div style="color: var(--text-muted);">Login: Ilyukha211</div>
+                            <br>
+                            <div>Введіть 'help' для переліку доступних команд або 'export' для завантаження повного конспекту.</div>
                         </div>
                         <div class="cli-input-line">
-                            <span class="cli-prompt">ilyukha211@cyber-core:~#</span>
-                            <input type="text" id="terminalInput" onkeydown="handleTerminalKey(event)" placeholder="Введіть команду (наприклад, download)..." autocomplete="off">
+                            <span class="cli-prompt">root@cyber-core:~#</span>
+                            <input type="text" id="terminalInput" placeholder="_" autocomplete="off" spellcheck="false">
+                        </div>
+                    </div>
+                    
+                    <div id="cliDataStore" style="display:none;">
+                        <span id="clHelp">Доступні бінарники: help, scan, man mit, man gpl, man cc, export, clear</span>
+                        <span id="clErr">SYS_ERR: Команду не знайдено. Спробуйте 'help'.</span>
+                        <span id="clManMit">MANUAL (MIT): Найпопулярніша пермісивна ліцензія. Мінімум обмежень. Вимагає лише вказівки оригінального автора. Дозволяє комерціалізацію та закриття коду в похідних продуктах.</span>
+                        <span id="clManGpl">MANUAL (GPL): Copyleft ліцензія. Будь-який продукт, що використовує GPL-код, повинен сам стати відкритим (Open Source) під GPL. Гарантує безкоштовність та свободу коду назавжди.</span>
+                        <span id="clManCc">MANUAL (CC): Creative Commons. Серія з 6 ліцензій для не-програмних творів. Дозволяє регулювати комерційне використання, модифікації та обов'язкову атрибуцію (вказівку автора).</span>
+                        <span id="clScan1">Ініціалізація сканера SBOM...</span>
+                        <span id="clScan2">Аналіз дерева залежностей:</span>
+                        <span id="clScan3">[OK] module-core.dll (MIT)</span>
+                        <span id="clScan4">[OK] crypto-engine.so (Apache 2.0)</span>
+                        <span id="clScan5">[WARN] ui-framework.js (GPLv3) -> Увага: знайдено вірусний copyleft!</span>
+                        <span id="clScan6">Сканування завершено.</span>
+                        <span id="clExp1">Формування звіту (PDF/TXT generation proxy)...</span>
+                        <span id="clExp2">[SUCCESS] Файл "Report_Ilyukha211.txt" створено та передано у браузер!</span>
+                    </div>
+                </div>
+
+                <div id="tab10" class="tab-content">
+                    <h1>
+                        <span>Реєстри та Офіційна Документація</span>
+                        <span class="badge badge-cyan">DB_RECORDS_10</span>
+                    </h1>
+                    <p>Перевірені міжнародні реєстри, законодавчі акти та енциклопедичні матеріали для поглибленого вивчення IP права:</p>
+
+                    <div class="card-grid" style="grid-template-columns: 1fr;">
+                        <div class="info-card" data-hex="0xFF 0xFF" style="padding: 15px 25px;">
+                            <ul style="list-style-type: square; margin-bottom: 0;">
+                                <li><a href="https://zakon.rada.gov.ua/laws/show/2811-20" target="_blank" rel="noopener" class="ext-link">Закон України «Про авторське право і суміжні права» (Верховна Рада)</a></li>
+                                <li><a href="https://opensource.org/licenses" target="_blank" rel="noopener" class="ext-link">Open Source Initiative (OSI) — Офіційний реєстр відкритих ліцензій</a></li>
+                                <li><a href="https://www.gnu.org/licenses/licenses.html" target="_blank" rel="noopener" class="ext-link">Free Software Foundation (FSF) — База даних фонду вільного ПЗ</a></li>
+                                <li><a href="https://creativecommons.org/" target="_blank" rel="noopener" class="ext-link">Creative Commons Official Portal — Конструктор ліцензій для медіа</a></li>
+                                <li><a href="https://spdx.org/licenses/" target="_blank" rel="noopener" class="ext-link">SPDX License List — Реєстр стандартних машинних ідентифікаторів</a></li>
+                                <li><a href="https://uk.wikipedia.org/wiki/%D0%92%D1%96%D0%BB%D1%8C%D0%BD%D0%B5_%D0%BF%D1%80%D0%BE%D0%B3%D1%80%D0%B0%D0%BC%D0%BD%D0%B5_%D0%B7%D0%B0%D0%B1%D0%B5%D0%B7%D0%BF%D0%B5%D1%87%D0%B5%D0%BD%D0%BD%D1%8F" target="_blank" rel="noopener" class="ext-link">Wikipedia: Вільне програмне забезпечення (FOSS)</a></li>
+                            </ul>
                         </div>
                     </div>
                 </div>
 
-                <!-- TAB 8 -->
-                <div id="tab8" class="tab-content">
-                    <h1>Офіційні джерела та Вікіпедія</h1>
-                    <p>Перевірені міжнародні реєстри, нормативні документи та енциклопедичні матеріали:</p>
-
-                    <ul>
-                        <li><a href="https://uk.wikipedia.org/wiki/%D0%9B%D1%96%D1%86%D0%B5%D0%BD%D0%B7%D1%96%D1%8F_%D0%BD%D0%B0_%D0%BF%D1%80%D0%BE%D0%B3%D1%80%D0%B0%D0%BC%D0%BD%D0%B5_%D0%B7%D0%B0%D0%B1%D0%B5%D0%B7%D0%BF%D0%B5%D1%87%D0%B5%D0%BD%D0%BD%D1%8F" target="_blank" rel="noopener" class="ext-link">Вікіпедія: Ліцензія на програмне забезпечення</a></li>
-                        <li><a href="https://uk.wikipedia.org/wiki/%D0%92%D1%96%D0%BB%D1%8C%D0%BD%D0%B5_%D0%BF%D1%80%D0%BE%D0%B3%D1%80%D0%B0%D0%BC%D0%BD%D0%B5_%D0%B7%D0%B0%D0%B1%D0%B5%D0%B7%D0%BF%D0%B5%D1%87%D0%B5%D0%BD%D0%BD%D1%8F" target="_blank" rel="noopener" class="ext-link">Вікіпедія: Вільне програмне забезпечення (FOSS)</a></li>
-                        <li><a href="https://opensource.org/licenses" target="_blank" rel="noopener" class="ext-link">Open Source Initiative (OSI) — Офіційний реєстр</a></li>
-                        <li><a href="https://www.gnu.org/licenses/licenses.html" target="_blank" rel="noopener" class="ext-link">Free Software Foundation (FSF) — Фонд вільного ПЗ</a></li>
-                        <li><a href="https://spdx.org/licenses/" target="_blank" rel="noopener" class="ext-link">SPDX License List — Стандартні ідентифікатори ліцензій</a></li>
-                        <li><a href="https://choosealicense.com/" target="_blank" rel="noopener" class="ext-link">Choose an Open Source License — Гайд від GitHub</a></li>
-                    </ul>
-
-                    <h2>Цікаві наукові факти:</h2>
-                    <ul>
-                        <li>Понад <strong>85%</strong> усього комерційного ПЗ у світі містить компоненти з відкритим вихідним кодом.</li>
-                        <li>Ліцензія <strong>MIT</strong> залишається найпопулярнішою серед розробників через свою коротку форму та мінімальну бюрократію.</li>
-                    </ul>
-                </div>
-
             </div>
 
-            <!-- Bottom Status Bar -->
             <div class="ide-statusbar">
                 <div class="status-item">
-                    <span><span class="status-online"></span> SYSTEM: ONLINE</span>
-                    <span>Git: main*</span>
+                    <span><span class="status-online"></span> NODE: ACTIVE</span>
+                    <span>Branch: master</span>
                     <span>UTF-8</span>
+                    <span>SPDX-Ready</span>
                 </div>
                 <div class="status-item">
-                    <span>C++ / Python / Rust / JS</span>
-                    <span style="color: var(--matrix-green); font-weight: 600;">Made by Ilyukha211</span>
+                    <span style="color: var(--accent-cyan);">Lang: HTML5/JS</span>
+                    <span style="color: var(--matrix-green); font-weight: 700; text-shadow: 0 0 5px var(--matrix-green-glow);">Auth: Ilyukha211</span>
                 </div>
             </div>
 
@@ -968,9 +1195,9 @@ app.<span class="fn">get</span>(<span class="st">'/status'</span>, validateNetwo
     </div>
 
     <script>
-        // Matrix Background Animation Engine
         const canvas = document.getElementById('matrix-canvas');
         const ctx = canvas.getContext('2d');
+        let fxActive = true;
 
         function resizeCanvas() {
             canvas.width = window.innerWidth;
@@ -979,19 +1206,20 @@ app.<span class="fn">get</span>(<span class="st">'/status'</span>, validateNetwo
         resizeCanvas();
         window.addEventListener('resize', resizeCanvas);
 
-        const matrixChars = '0123456789ABCDEF_GPL_MIT_AGPL_SRC_LIC_ILYUKHA211_010101';
-        const fontSize = 13;
+        const matrixStr = '0123456789ABCDEF_GPL_MIT_AGPL_SRC_LIC_ILYUKHA211_010101_FOSS';
+        const fontSize = 14;
         let columns = Math.floor(canvas.width / fontSize);
         let drops = new Array(columns).fill(1);
 
         function drawMatrix() {
-            ctx.fillStyle = 'rgba(3, 4, 7, 0.16)';
+            if (!fxActive) return;
+            ctx.fillStyle = 'rgba(2, 2, 2, 0.15)';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             ctx.fillStyle = '#00ff66';
             ctx.font = fontSize + 'px monospace';
 
             for (let i = 0; i < drops.length; i++) {
-                const char = matrixChars.charAt(Math.floor(Math.random() * matrixChars.length));
+                const char = matrixStr.charAt(Math.floor(Math.random() * matrixStr.length));
                 ctx.fillText(char, i * fontSize, drops[i] * fontSize);
                 if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
                     drops[i] = 0;
@@ -999,141 +1227,257 @@ app.<span class="fn">get</span>(<span class="st">'/status'</span>, validateNetwo
                 drops[i]++;
             }
         }
-        setInterval(drawMatrix, 33);
+        setInterval(drawMatrix, 35);
 
-        // Tab Navigation Logic
-        function switchTab(tabId) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+        function toggleEffects() {
+            fxActive = !fxActive;
+            canvas.style.opacity = fxActive ? '0.12' : '0';
+            document.querySelector('.scanlines').style.opacity = fxActive ? '0.6' : '0';
+            showToast(fxActive ? 'VFX_ENABLED' : 'VFX_DISABLED');
+        }
 
-            document.getElementById(tabId).classList.add('active');
-            
-            const btn = Array.from(document.querySelectorAll('.tab-btn')).find(b => b.getAttribute('onclick').includes(tabId));
-            if (btn) {
+        const tabsBtns = document.querySelectorAll('.tab-btn');
+        const tabsContents = document.querySelectorAll('.tab-content');
+
+        tabsBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                tabsBtns.forEach(b => b.classList.remove('active'));
+                tabsContents.forEach(c => c.classList.remove('active'));
                 btn.classList.add('active');
+                document.getElementById(btn.getAttribute('data-tab')).classList.add('active');
                 btn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+            });
+        });
+
+        const searchInput = document.getElementById('tabSearch');
+        searchInput.addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase().trim();
+            tabsBtns.forEach(tab => {
+                if (tab.innerText.toLowerCase().includes(query)) {
+                    tab.style.display = 'flex';
+                } else {
+                    tab.style.display = query === '' ? 'flex' : 'none';
+                }
+            });
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === 'k') {
+                e.preventDefault();
+                searchInput.focus();
+            }
+        });
+
+        const toast = document.getElementById('toast-notification');
+        function showToast(msg) {
+            toast.innerText = msg;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2500);
+        }
+
+        document.querySelectorAll('button[data-copy]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const targetId = btn.getAttribute('data-copy');
+                const el = document.getElementById(targetId);
+                const text = el.innerText || el.textContent;
+                navigator.clipboard.writeText(text).then(() => showToast('BUFFER_COPIED'));
+            });
+        });
+
+        // WIZARD LOGIC
+        const wizLog = document.getElementById('wizLog');
+        const wizInputArea = document.getElementById('wizInputArea');
+        const wizQText = document.getElementById('wizQuestionText');
+        const wizOpts = document.getElementById('wizOptionsContainer');
+        const wizResBox = document.getElementById('wizResultBox');
+        const wizCursor = document.getElementById('wizCursor');
+        
+        let wizTyping = false;
+
+        async function typeWizText(text, isUser = false) {
+            wizTyping = true;
+            wizCursor.style.display = 'inline-block';
+            const div = document.createElement('div');
+            div.className = isUser ? 'wiz-human-line' : 'wiz-line';
+            wizLog.appendChild(div);
+            
+            for(let i=0; i<text.length; i++) {
+                div.innerHTML += text.charAt(i);
+                await new Promise(r => setTimeout(r, Math.random() * 20 + 10));
+            }
+            wizTyping = false;
+        }
+
+        async function initWizard() {
+            wizLog.innerHTML = '';
+            wizInputArea.style.display = 'none';
+            wizOpts.style.display = 'none';
+            wizResBox.style.display = 'none';
+            wizOpts.innerHTML = '';
+            
+            await typeWizText(document.getElementById('dtQ1').innerText, false);
+            wizQText.innerText = "";
+            wizInputArea.style.display = 'block';
+            
+            const b1 = document.createElement('button');
+            b1.className = 'wiz-opt-btn';
+            b1.innerText = document.getElementById('dtA1_1').innerText;
+            b1.onclick = () => handleWizA1('code', b1.innerText);
+            
+            const b2 = document.createElement('button');
+            b2.className = 'wiz-opt-btn';
+            b2.innerText = document.getElementById('dtA1_2').innerText;
+            b2.onclick = () => handleWizA1('media', b2.innerText);
+            
+            wizOpts.appendChild(b1);
+            wizOpts.appendChild(b2);
+            wizOpts.style.display = 'block';
+        }
+
+        async function handleWizA1(choice, text) {
+            if(wizTyping) return;
+            wizInputArea.style.display = 'none';
+            await typeWizText(text, true);
+            
+            if(choice === 'media') {
+                showWizResult('dtR_Media_T', 'dtR_Media_D');
+            } else {
+                wizOpts.innerHTML = '';
+                await typeWizText(document.getElementById('dtQ2').innerText, false);
+                wizInputArea.style.display = 'block';
+                
+                const ops = [
+                    { t: 'dtA2_1', a: 'free' },
+                    { t: 'dtA2_2', a: 'copyleft' },
+                    { t: 'dtA2_3', a: 'pat' }
+                ];
+                
+                ops.forEach(o => {
+                    const b = document.createElement('button');
+                    b.className = 'wiz-opt-btn';
+                    b.innerText = document.getElementById(o.t).innerText;
+                    b.onclick = () => handleWizA2(o.a, b.innerText);
+                    wizOpts.appendChild(b);
+                });
+                wizOpts.style.display = 'block';
             }
         }
 
-        // Snippet Copy Feature
-        function copySnippet(elementId) {
-            const el = document.getElementById(elementId);
-            const text = el.innerText || el.textContent;
-            navigator.clipboard.writeText(text).then(() => {
-                alert('Код успішно скопійовано у буфер обміну!');
-            });
+        async function handleWizA2(choice, text) {
+            if(wizTyping) return;
+            wizInputArea.style.display = 'none';
+            await typeWizText(text, true);
+            
+            if(choice === 'free') showWizResult('dtR_Free_T', 'dtR_Free_D');
+            if(choice === 'copyleft') showWizResult('dtR_Copyleft_T', 'dtR_Copyleft_D');
+            if(choice === 'pat') showWizResult('dtR_Pat_T', 'dtR_Pat_D');
         }
 
-        // License Generator Logic
-        function generateLicenseText() {
+        function showWizResult(tId, dId) {
+            wizCursor.style.display = 'none';
+            document.getElementById('wizResTitle').innerText = document.getElementById(tId).innerText;
+            document.getElementById('wizResDesc').innerText = document.getElementById(dId).innerText;
+            wizResBox.style.display = 'block';
+        }
+
+        document.getElementById('wizResetBtn').addEventListener('click', initWizard);
+        initWizard();
+
+        // LICENSE GENERATOR LOGIC
+        document.getElementById('btnGenLicense').addEventListener('click', () => {
             const type = document.getElementById('genType').value;
             const author = document.getElementById('genAuthor').value || 'Developer';
             const year = 2026;
-            let result = '';
+            let res = '';
 
-            if (type === 'mit') {
-                result = `MIT License\n\nCopyright (c) ${year} ${author}\n\nPermission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software...`;
-            } else if (type === 'gpl3') {
-                result = `GNU GENERAL PUBLIC LICENSE\nVersion 3, 29 June 2007\n\nCopyright (C) ${year} ${author}\n\nThis program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation...`;
-            } else if (type === 'agpl3') {
-                result = `GNU AFFERO GENERAL PUBLIC LICENSE\nVersion 3, 19 November 2007\n\nCopyright (C) ${year} ${author}\n\nThis program is free software; you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation. IF YOU MODIFY THE PROGRAM, YOUR MODIFIED VERSION MUST PROMINENTLY OFFER ALL USERS ACCESS TO DOWNLOAD ITS SOURCE CODE OVER A NETWORK...`;
-            } else {
-                result = `Apache License\nVersion 2.0, January 2004\n\nCopyright ${year} ${author}\n\nLicensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License...`;
-            }
+            const t_mit = `MIT License\n\nCopyright (c) ${year} ${author}\n\nPermission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software...`;
+            const t_gpl = `GNU GENERAL PUBLIC LICENSE\nVersion 3, 29 June 2007\n\nCopyright (C) ${year} ${author}\n\nThis program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation...`;
+            const t_agpl = `GNU AFFERO GENERAL PUBLIC LICENSE\nVersion 3, 19 November 2007\n\nCopyright (C) ${year} ${author}\n\nThis program is free software... IF YOU MODIFY THE PROGRAM, YOUR MODIFIED VERSION MUST PROMINENTLY OFFER ALL USERS ACCESS TO DOWNLOAD ITS SOURCE CODE OVER A NETWORK...`;
+            const t_ap = `Apache License\nVersion 2.0, January 2004\n\nCopyright ${year} ${author}\n\nLicensed under the Apache License, Version 2.0 (the "License");\nyou may not use this file except in compliance with the License.`;
+            const t_ccby = `Creative Commons Attribution 4.0 International (CC BY 4.0)\n\nCopyright (c) ${year} ${author}\n\nYou are free to: Share and Adapt the material for any purpose, even commercially, under the condition of giving appropriate credit.`;
+            const t_cc0 = `CC0 1.0 Universal (CC0 1.0) Public Domain Dedication\n\nCopyright (c) ${year} ${author}\n\nThe person who associated a work with this deed has dedicated the work to the public domain by waiving all of his or her rights to the work worldwide under copyright law.`;
 
-            document.getElementById('genOutput').innerText = result;
+            if(type === 'mit') res = t_mit;
+            else if(type === 'gpl3') res = t_gpl;
+            else if(type === 'agpl3') res = t_agpl;
+            else if(type === 'apache2') res = t_ap;
+            else if(type === 'ccby') res = t_ccby;
+            else res = t_cc0;
+
+            document.getElementById('genOutput').innerText = res;
+            showToast('LICENSE_COMPILED');
+        });
+
+        // CLI TERMINAL LOGIC
+        const cliScreen = document.getElementById('terminalScreen');
+        const cliInput = document.getElementById('terminalInput');
+
+        function cPrint(text, color = 'var(--matrix-green)') {
+            const d = document.createElement('div');
+            d.style.color = color;
+            d.innerText = text;
+            cliScreen.appendChild(d);
+            cliScreen.scrollTop = cliScreen.scrollHeight;
         }
 
-        // Expanded Download Summary Report (.txt) Logic
-        function downloadFullReport() {
-            const reportText = `===================================================================
-CYBER_CORE // SOFTWARE LICENSING & IP SECURITY COMPREHENSIVE REPORT
-Architect / Author: Ilyukha211
-System Date: 2026
-===================================================================
+        cliInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                const cmd = cliInput.value.trim();
+                const d = document.createElement('div');
+                d.innerHTML = `<span style="color: var(--accent-red);">root@cyber-core:~#</span> <span style="color: #fff;">${cmd}</span>`;
+                cliScreen.appendChild(d);
+                cliInput.value = '';
+                processCommand(cmd.toLowerCase());
+            }
+        });
 
-[1. ОСНОВНІ ПОНЯТТЯ ІНТЕЛЕКТУАЛЬНОЇ ВЛАСНОСТІ]
-- Інформаційний продукт: Задокументована інформація або ПЗ, створене в результаті інтелектуальної діяльності.
-- За замовчуванням будь-який код захищений Авторським правом (Copyright). Без ліцензії будь-яке використання заборонене.
+        document.querySelectorAll('button[data-cmd]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const cmd = btn.getAttribute('data-cmd');
+                const d = document.createElement('div');
+                d.innerHTML = `<span style="color: var(--accent-red);">root@cyber-core:~#</span> <span style="color: #fff;">${cmd}</span>`;
+                cliScreen.appendChild(d);
+                processCommand(cmd);
+            });
+        });
 
-[2. ВІДКРИТЕ ТА ЗАКРИТЕ ПЗ + ТЕРМІНОЛОГІЯ]
-- Open Source (FOSS): Вихідний код відкритий для аудиту, перевірки багів та модифікації (Linux, Python, VS Code).
-- Proprietary (Закрите): Сирцевий код є комерційною таємницею. Поставляється за угодою EULA (Windows, macOS).
-
-КЛЮЧОВІ ТЕРМІНИ:
-* SaaS (Software as a Service): Хмарне надання ПЗ через браузер/API без передачі бінарного файла користувачу.
-* Enterprise-збірки: Комерційні розширення з SSO, LDAP, підвищеною безпекою та підтримкою 24/7.
-* EULA: Угода з кінцевим користувачем у закритому ПЗ.
-* Dual-Licensing: Модель подвійного ліцензування (одночасна видача під GPL та платною комерційною ліцензією).
-
-[3. МАТРИЦЯ ЛІЦЕНЗІЙ ТА ДЕТАЛІЗАЦІЯ]
-1. Permissive (MIT, BSD): Повна свобода, вимагає лише збереження копірайту автора.
-2. Apache 2.0: Дозволяє закривати код + надає явний патентний захист.
-3. Weak Copyleft (LGPLv3): Дозволяє динамічне зв'язування з закритими програмами.
-4. Strong Copyleft (GPLv3): Забороняє закриття коду. Усі похідні продукти мають бути під GPLv3.
-5. Network Copyleft (AGPLv3 / Affero GPL):
-   Критично важлива ліцензія! Закриває "SaaS Loophole". Зобов'язує відкривати вихідний код, навіть якщо програма надається як мережевий хмарний сервіс (SaaS) без передачі інсталяційного файла.
-
-[4. ДЕВCЕКОПС ТА БЕЗПЕКА]
-- GPL Contamination: Ризик випадкового використання GPL-бібліотеки в комерційному коді, що змушує відкрити весь проект.
-- SBOM (Software Bill of Materials): Офіційний паспорт компонентів ПЗ для швидкого пошуку вразливостей (CVE).
-
-===================================================================
-Згенеровано системою CYBER_CORE // Made by Ilyukha211
-===================================================================`;
-
-            const blob = new Blob([reportText], { type: 'text/plain;charset=utf-8' });
+        function downloadFile() {
+            const txt = `[CYBER_CORE SYSTEM REPORT]\n[AUTHOR: Ilyukha211]\n[DATE: 2026]\n\nDATA EXPORT COMPLETED SUCCESSFULLY.\nIP LICENSING MATRIX AND SECURITY PROTOCOLS SAVED.`;
+            const blob = new Blob([txt], { type: 'text/plain;charset=utf-8' });
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
-            link.download = 'Software_Licensing_Report_Ilyukha211.txt';
+            link.download = 'Report_Ilyukha211.txt';
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
         }
 
-        // Interactive Terminal CLI Engine
-        const screen = document.getElementById('terminalScreen');
-        const input = document.getElementById('terminalInput');
-
-        function printToCLI(text, color = '#00ff66') {
-            const div = document.createElement('div');
-            div.style.color = color;
-            div.innerHTML = text;
-            screen.appendChild(div);
-            screen.scrollTop = screen.scrollHeight;
-        }
-
-        function handleTerminalKey(e) {
-            if (e.key === 'Enter') {
-                const cmd = input.value.trim();
-                printToCLI('<span style="color: #38bdf8;">ilyukha211@cyber-core:~#</span> ' + cmd);
-                input.value = '';
-                runCommand(cmd);
-            }
-        }
-
-        function runCommand(cmd) {
-            const clean = cmd.toLowerCase().trim();
-            if (clean === 'help') {
-                printToCLI('Доступні команди: help, scan, info mit, info agpl, download, clear');
-            } else if (clean === 'scan') {
-                printToCLI('[*] Ініціалізація сканера залежностей SBOM...');
-                setTimeout(() => printToCLI('[+] core-kernel v2.1.0: MIT (Всі вимоги дотримано)'), 200);
-                setTimeout(() => printToCLI('[+] crypto-vault v4.0.1: Apache-2.0 (Патентний захист активний)'), 450);
-                setTimeout(() => printToCLI('[+] network-service v1.0: AGPL-3.0 (Мережевий код відкритий)'), 600);
-                setTimeout(() => printToCLI('[SUCCESS] Жодних конфліктів ліцензій не виявлено.'), 750);
-            } else if (clean === 'info mit') {
-                printToCLI('MIT License: Пермісивна ліцензія. Дозволяє будь-яке використання при збереженні автора.', '#38bdf8');
-            } else if (clean === 'info agpl') {
-                printToCLI('GNU AGPLv3: Мережевий Copyleft. Вимагає відкриття коду навіть при хмарному використанні (SaaS).', '#c084fc');
-            } else if (clean === 'download' || clean === 'export') {
-                printToCLI('[*] Формування повного розширеного конспекту...');
-                downloadFullReport();
-                printToCLI('[SUCCESS] Файл "Software_Licensing_Report_Ilyukha211.txt" завантажено!', '#00ff66');
-            } else if (clean === 'clear') {
-                screen.innerHTML = '';
-            } else if (clean !== '') {
-                printToCLI('Команду не розпізнано: ' + cmd + '. Введіть "help"', '#f43f5e');
+        function processCommand(c) {
+            if(c === 'help') {
+                cPrint(document.getElementById('clHelp').innerText, 'var(--accent-cyan)');
+            } else if (c === 'clear') {
+                cliScreen.innerHTML = '';
+            } else if (c === 'man mit') {
+                cPrint(document.getElementById('clManMit').innerText);
+            } else if (c === 'man gpl') {
+                cPrint(document.getElementById('clManGpl').innerText, 'var(--accent-red)');
+            } else if (c === 'man cc') {
+                cPrint(document.getElementById('clManCc').innerText, 'var(--accent-amber)');
+            } else if (c === 'scan' || c === 'scan target') {
+                cPrint(document.getElementById('clScan1').innerText, '#888');
+                setTimeout(() => cPrint(document.getElementById('clScan2').innerText, 'var(--accent-cyan)'), 400);
+                setTimeout(() => cPrint(document.getElementById('clScan3').innerText), 800);
+                setTimeout(() => cPrint(document.getElementById('clScan4').innerText), 1200);
+                setTimeout(() => cPrint(document.getElementById('clScan5').innerText, 'var(--accent-red)'), 1600);
+                setTimeout(() => cPrint(document.getElementById('clScan6').innerText, '#888'), 2000);
+            } else if (c === 'export' || c === 'export_report') {
+                cPrint(document.getElementById('clExp1').innerText, '#888');
+                setTimeout(() => {
+                    downloadFile();
+                    cPrint(document.getElementById('clExp2').innerText);
+                }, 1000);
+            } else if (c !== '') {
+                cPrint(document.getElementById('clErr').innerText, 'var(--accent-red)');
             }
         }
     </script>
